@@ -16,6 +16,7 @@
   "dependencies": {
     "blueimp-load-image": "^5.16.0",
     "exifreader": "^4.13.2",
+    "heic2any": "^0.0.4",
     "pinia": "^2.1.6",
     "vue": "^3.3.4",
     "vue-router": "^4.2.4"

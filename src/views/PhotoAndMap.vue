@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-
 import ExifReader from 'exifreader'
+import heic2any from 'heic2any'
 const imgFile = ref<File | null>(null)
 const imgFileUrl = ref<string>('')
 const laDecimal2 = ref<number>(0)
@@ -20,13 +20,33 @@ const dropHandler = async (ev: DragEvent) => {
         const file = item.getAsFile()
         if (!file) return
         const tags = await ExifReader.load(file)
+
         console.log('tags', tags)
         console.log(tags.GPSLatitude?.description)
         laDecimal2.value = parseFloat(tags.GPSLatitude?.description as string)
         loDecimal2.value = parseFloat(tags.GPSLongitude?.description as string)
 
         imgFile.value = file
-        imgFileUrl.value = URL.createObjectURL(imgFile.value)
+
+        let blobURL = URL.createObjectURL(imgFile.value)
+        const extension = file.name.toLocaleLowerCase().split('.').pop()
+
+        switch (extension) {
+          case 'heic': {
+            // convert "fetch" the new blob url
+            let blobRes = await fetch(blobURL)
+            // convert response to blob
+            let blob = await blobRes.blob()
+            // convert to PNG - response is blob
+            let conversionResult = await heic2any({ blob })
+            blobURL = URL.createObjectURL(conversionResult as Blob)
+            break
+          }
+
+          default:
+            break
+        }
+        imgFileUrl.value = blobURL
       }
     })
   }
@@ -55,12 +75,12 @@ const dragOverHandler = (ev: DragEvent) => {
 <style scoped>
 #drop_zone {
   border: 5px solid blue;
-  width: 200px;
-  height: 100px;
+  width: 400px;
+  height: 400px;
 }
 img {
   width: 180px;
-  height: 60px;
+  height: 360px;
 
   /* // 左端に寄せてサイズを見やすくしたかったので、設定 */
   object-position: left;
