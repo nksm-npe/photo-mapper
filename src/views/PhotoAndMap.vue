@@ -25,9 +25,7 @@ const dropHandler = async (ev: DragEvent) => {
 
         console.log('tags', tags)
         console.log(tags.GPSLatitude?.description)
-        // laDecimal2.value = parseFloat(tags.GPSLatitude?.description as string)
         latLng.value[0] = parseFloat(tags.GPSLatitude?.description as string)
-        // loDecimal2.value = parseFloat(tags.GPSLongitude?.description as string)
         latLng.value[1] = parseFloat(tags.GPSLongitude?.description as string)
 
         imgFile.value = file
@@ -74,10 +72,8 @@ const dragOverHandler = (ev: DragEvent) => {
   </div>
 
   <img v-if="imgFile != null" :src="imgFileUrl" :alt="imgFile.name" :title="imgFile.name" />
-  <!-- {{ laDecimal2 }}, {{ loDecimal2 }} -->
   {{ latLng }}
-  <!-- <Leaflet :lat-lng="latLng"></Leaflet> -->
-  <Leaflet :lat="latLng[0]" :lng="latLng[1]"></Leaflet>
+  <Leaflet :lat-lng="latLng"></Leaflet>
 </template>
 <style scoped>
 #drop_zone {
@@ -89,10 +85,8 @@ img {
   width: 180px;
   height: 360px;
 
-  /* // 左端に寄せてサイズを見やすくしたかったので、設定 */
   object-position: left;
 
-  /* // imgのサイズを分かりやすくするため、background-colorを設定 */
   background-color: #999;
   object-fit: contain;
 }
