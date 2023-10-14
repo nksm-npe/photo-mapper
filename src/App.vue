@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { useCounterStore } from './stores/counter'
 
-// store の戻り値を分割代入 (destructuring assignment) してはいけない。refが外れる
-const store = useCounterStore()
 </script>
 
 <template>
@@ -12,11 +9,11 @@ const store = useCounterStore()
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld :msg="store.count + 'xxxxx'" />
-      <button @click="store.increment">Count is: {{ store.count }}</button>
+      <HelloWorld msg="写真のEXIF取得" />
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/photo-and-map">Photo and Map</RouterLink>
       </nav>
     </div>
   </header>
