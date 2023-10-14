@@ -18,6 +18,7 @@ const zoom = ref<number>(8)
         name="OpenStreetMap"
       ></l-tile-layer>
       <l-marker :lat-lng="[...latLng]"></l-marker>
+      <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
     </l-map>
   </div>
 </template>
