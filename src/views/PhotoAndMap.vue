@@ -2,12 +2,11 @@
 import { ref } from 'vue'
 import ExifReader from 'exifreader'
 import heic2any from 'heic2any'
-import Leaflet from './Leaflet.vue'
+import LeafletArea from '@/components/LeafletArea.vue'
+import { LMarker } from '@vue-leaflet/vue-leaflet'
 const imgFile = ref<File | null>(null)
 const imgFileUrl = ref<string>('')
-// const laDecimal2 = ref<number>(0)
-// const loDecimal2 = ref<number>(0)
-const latLng = ref<[number, number]>([35.681, 139.763])
+const latLngs = ref<[number, number][]>([[35.681, 139.763]])
 const dropHandler = async (ev: DragEvent) => {
   console.log('File(s) dropped')
 
@@ -16,44 +15,57 @@ const dropHandler = async (ev: DragEvent) => {
 
   if (ev.dataTransfer?.items) {
     // DataTransferItemList インターフェイスを使用して、ファイルにアクセスする
-    ;[...ev.dataTransfer.items].forEach(async (item, i) => {
-      // ドロップしたものがファイルでない場合は拒否する
-      if (item.kind === 'file') {
-        const file = item.getAsFile()
-        if (!file) return
-        const tags = await ExifReader.load(file)
-
-        console.log('tags', tags)
-        console.log(tags.GPSLatitude?.description)
-        latLng.value[0] = parseFloat(tags.GPSLatitude?.description as string)
-        latLng.value[1] = parseFloat(tags.GPSLongitude?.description as string)
-
-        imgFile.value = file
-
-        let blobURL = URL.createObjectURL(imgFile.value)
-        const extension = file.name.toLocaleLowerCase().split('.').pop()
-
-        switch (extension) {
-          case 'heic': {
-            // convert "fetch" the new blob url
-            let blobRes = await fetch(blobURL)
-            // convert response to blob
-            let blob = await blobRes.blob()
-            // convert to PNG - response is blob
-            let conversionResult = await heic2any({ blob })
-            blobURL = URL.createObjectURL(conversionResult as Blob)
-            break
-          }
-
-          default:
-            break
-        }
-        imgFileUrl.value = blobURL
-      }
-    })
+    const newLocal = [...ev.dataTransfer.items]
+    const files = newLocal.filter((x) => x.kind === 'file').map((x) => x.getAsFile() as File)
+    if (files == null || files.length <= 0) return
+    loadFiles(files)
   }
 }
 
+const loadImageFromInput = (ev: Event) => {
+  const { files } = ev.target as HTMLInputElement
+  console.log(files)
+  if (files == null) return
+
+  loadFiles(Array.from(files))
+}
+function loadFiles(files: File[]) {
+  files.forEach(async (file, i) => {
+    // ドロップしたものがファイルでない場合は拒否する
+
+    const tags = await ExifReader.load(file)
+
+    console.log('tags', tags)
+    console.log(tags.GPSLatitude?.description)
+    const latLng: [number, number] = [0, 0]
+    if (!tags.GPSLatitude) return
+    latLng[0] = parseFloat(tags.GPSLatitude?.description as string)
+    latLng[1] = parseFloat(tags.GPSLongitude?.description as string)
+    latLngs.value.push(latLng)
+
+    imgFile.value = file
+
+    let blobURL = URL.createObjectURL(imgFile.value)
+    const extension = file.name.toLocaleLowerCase().split('.').pop()
+
+    switch (extension) {
+      case 'heic': {
+        // convert "fetch" the new blob url
+        let blobRes = await fetch(blobURL)
+        // convert response to blob
+        let blob = await blobRes.blob()
+        // convert to PNG - response is blob
+        let conversionResult = await heic2any({ blob })
+        blobURL = URL.createObjectURL(conversionResult as Blob)
+        break
+      }
+
+      default:
+        break
+    }
+    imgFileUrl.value = blobURL
+  })
+}
 const dragOverHandler = (ev: DragEvent) => {
   console.log('File(s) in drop zone')
 
@@ -70,11 +82,17 @@ const dragOverHandler = (ev: DragEvent) => {
   >
     <p>Drag one or more files to this <i>drop zone</i>.</p>
   </div>
-
+  <input type="file" multiple @change="(ev: Event) => loadImageFromInput(ev)" />
   <img v-if="imgFile != null" :src="imgFileUrl" :alt="imgFile.name" :title="imgFile.name" />
-  {{ latLng }}
-  <Leaflet :lat-lng="latLng"></Leaflet>
+  {{ latLngs }}
+  <LeafletArea>
+    <div v-for="(latLng, index) in latLngs" :key="index">
+      <l-marker :lat-lng="[...latLng]"></l-marker>
+    </div>
+    <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
+  </LeafletArea>
 </template>
+
 <style scoped>
 #drop_zone {
   border: 5px solid blue;
