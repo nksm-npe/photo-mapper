@@ -7,6 +7,9 @@ import { LMarker } from '@vue-leaflet/vue-leaflet'
 const imgFile = ref<File | null>(null)
 const imgFileUrl = ref<string>('')
 const latLngs = ref<[number, number][]>([[35.681, 139.763]])
+
+const mainbuffer: { [key: string]: { latLng: [number, number]; imgdata: string } } = {}
+
 const dropHandler = async (ev: DragEvent) => {
   console.log('File(s) dropped')
 
@@ -64,6 +67,8 @@ function loadFiles(files: File[]) {
         break
     }
     imgFileUrl.value = blobURL
+    mainbuffer[file.name + '_' + file.lastModified] = { imgdata: blobURL, latLng: latLng }
+    console.log(mainbuffer)
   })
 }
 const dragOverHandler = (ev: DragEvent) => {
@@ -75,32 +80,40 @@ const dragOverHandler = (ev: DragEvent) => {
 </script>
 
 <template>
-  <div
-    id="drop_zone"
-    @drop="(e: DragEvent) => dropHandler(e)"
-    @dragover="(e: DragEvent) => dragOverHandler(e)"
-  >
-    <p>Drag one or more files to this <i>drop zone</i>.</p>
-  </div>
-  <input type="file" multiple @change="(ev: Event) => loadImageFromInput(ev)" />
-  <img v-if="imgFile != null" :src="imgFileUrl" :alt="imgFile.name" :title="imgFile.name" />
-  {{ latLngs }}
-  <LeafletArea>
-    <div v-for="(latLng, index) in latLngs" :key="index">
-      <l-marker :lat-lng="[...latLng]"></l-marker>
+  <div id="right">
+    <input type="file" multiple @change="(ev: Event) => loadImageFromInput(ev)" />
+
+    <div
+      id="drop_zone"
+      @drop="(e: DragEvent) => dropHandler(e)"
+      @dragover="(e: DragEvent) => dragOverHandler(e)"
+    >
+      <p>Drag one or more files to this <i>drop zone</i>.</p>
     </div>
-    <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
-  </LeafletArea>
+
+    <img v-if="imgFile != null" :src="imgFileUrl" :alt="imgFile.name" :title="imgFile.name" />
+    {{ latLngs }}
+    <LeafletArea>
+      <div v-for="(latLng, index) in latLngs" :key="index">
+        <l-marker :lat-lng="[...latLng]"></l-marker>
+      </div>
+      <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
+    </LeafletArea>
+  </div>
 </template>
 
 <style scoped>
+#right {
+  display: block;
+  width: 100%;
+}
 #drop_zone {
   border: 5px solid blue;
-  width: 400px;
+  /* width: 400px; */
   height: 400px;
 }
 img {
-  width: 180px;
+  /* width: 180px; */
   height: 360px;
 
   object-position: left;

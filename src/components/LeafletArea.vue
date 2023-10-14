@@ -7,7 +7,7 @@ const LAT_LNG_SUITA = [34.80000277777778, 135.5057972222222]
 </script>
 
 <template>
-  <div style="height: 600px; width: 800px">
+  <div style="height: 600px; width: 100%">
     <l-map ref="map" :use-global-leaflet="false" v-model:zoom="zoom" :center="LAT_LNG_SUITA">
       <l-control-layers position="topright"></l-control-layers>
       <l-tile-layer
