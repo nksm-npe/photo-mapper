@@ -3,12 +3,12 @@ import { ref } from 'vue'
 import ExifReader from 'exifreader'
 import heic2any from 'heic2any'
 import LeafletArea from '@/components/LeafletArea.vue'
-import { LMarker } from '@vue-leaflet/vue-leaflet'
+import { LMarker, LPopup } from '@vue-leaflet/vue-leaflet'
+import { useImageLocationsStore } from '@/stores/imageLocationsStore'
 const imgFile = ref<File | null>(null)
 const imgFileUrl = ref<string>('')
 const latLngs = ref<[number, number][]>([[35.681, 139.763]])
-
-const mainbuffer: { [key: string]: { latLng: [number, number]; imgdata: string } } = {}
+const imageLocations = useImageLocationsStore()
 
 const dropHandler = async (ev: DragEvent) => {
   console.log('File(s) dropped')
@@ -67,8 +67,8 @@ function loadFiles(files: File[]) {
         break
     }
     imgFileUrl.value = blobURL
-    mainbuffer[file.name + '_' + file.lastModified] = { imgdata: blobURL, latLng: latLng }
-    console.log(mainbuffer)
+    imageLocations.store[file.name + '_' + file.lastModified] = { imgdata: blobURL, latLng: latLng }
+    console.log(imageLocations.store)
   })
 }
 const dragOverHandler = (ev: DragEvent) => {
@@ -80,45 +80,29 @@ const dragOverHandler = (ev: DragEvent) => {
 </script>
 
 <template>
-  <div id="right">
+  <div class="w-full h-full" id="right">
     <input type="file" multiple @change="(ev: Event) => loadImageFromInput(ev)" />
 
     <div
+      class="h-20 border-4"
       id="drop_zone"
       @drop="(e: DragEvent) => dropHandler(e)"
       @dragover="(e: DragEvent) => dragOverHandler(e)"
     >
       <p>Drag one or more files to this <i>drop zone</i>.</p>
     </div>
-
-    <img v-if="imgFile != null" :src="imgFileUrl" :alt="imgFile.name" :title="imgFile.name" />
-    {{ latLngs }}
-    <LeafletArea>
-      <div v-for="(latLng, index) in latLngs" :key="index">
-        <l-marker :lat-lng="[...latLng]"></l-marker>
-      </div>
-      <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
-    </LeafletArea>
+    <div class="relative">
+      <LeafletArea>
+        <div v-for="[key, { latLng, imgdata }] in Object.entries(imageLocations.store)" :key="key">
+          <l-marker :lat-lng="[...latLng]">
+            <l-popup>
+              <div><img :src="imgdata" class="object-contain" /></div>
+              <div class="w-96"></div>
+            </l-popup>
+          </l-marker>
+        </div>
+        <l-marker :lat-lng="[35.681, 139.763]"></l-marker>
+      </LeafletArea>
+    </div>
   </div>
 </template>
-
-<style scoped>
-#right {
-  display: block;
-  width: 100%;
-}
-#drop_zone {
-  border: 5px solid blue;
-  /* width: 400px; */
-  height: 400px;
-}
-img {
-  /* width: 180px; */
-  height: 360px;
-
-  object-position: left;
-
-  background-color: #999;
-  object-fit: contain;
-}
-</style>

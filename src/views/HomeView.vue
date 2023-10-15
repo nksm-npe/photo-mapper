@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+const imageLocations = useImageLocationsStore()
+import { useImageLocationsStore } from '@/stores/imageLocationsStore'
+import PhotoMapTable from '@/components/PhotoMapTable.vue'
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <PhotoMapTable :img-and-locs="imageLocations.store"></PhotoMapTable>
   </main>
 </template>
