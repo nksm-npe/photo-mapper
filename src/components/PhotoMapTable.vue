@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ImageLocationRecord } from '@/views/ImageLocationRecord'
+import type { ImageLocationRecord } from '@/interfaces/ImageLocationRecord'
 
-const props = defineProps<{
+defineProps<{
   imgAndLocs: ImageLocationRecord
 }>()
 </script>
@@ -45,4 +45,3 @@ const props = defineProps<{
     </table>
   </div>
 </template>
-@/interfaces/ImageLocationRecord
