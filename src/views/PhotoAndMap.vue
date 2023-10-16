@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import LeafletArea from '@/components/LeafletArea.vue'
 import { LMarker, LPopup } from '@vue-leaflet/vue-leaflet'
-import { loadFiles } from './loadFiles'
 import { useImageLocationsStore } from '@/stores/imageLocationsStore'
 const imageLocations = useImageLocationsStore()
 
@@ -16,12 +15,7 @@ const dropHandler = async (ev: DragEvent) => {
     const newLocal = [...ev.dataTransfer.items]
     const files = newLocal.filter((x) => x.kind === 'file').map((x) => x.getAsFile() as File)
     if (files == null || files.length <= 0) return
-    files.forEach(async (file) => {
-      const res = await loadFiles(file)
-      if (res != null) {
-        imageLocations.store = Object.assign(imageLocations.store, res)
-      }
-    })
+    imageLocations.loadImages(files)
   }
 }
 
